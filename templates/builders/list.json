@@ -1,0 +1,5 @@
+{
+	"qemu": {
+		"template_url": "/templates/builders/qemu"
+	}
+}

@@ -1,0 +1,28 @@
+{
+	"optional":
+		"local_state_tree": {
+			"type": "string",
+			"description": "The path to your local state tree. This will be uploaded to the /srv/salt on the remote."
+		},
+		"local_pillar_roots": {
+			"type": "string",
+			"description": "The path to your local pillar roots. This will be uploaded to the /srv/pillar on the remote."
+		},
+		"skip_bootstrap": {
+			"type": "boolean",
+			"description": "By default the salt provisioner runs salt bootstrap to install salt. Set this to true to skip this step."
+		},
+		"boostrap_args": {
+			"type": "string",
+			"description": "Arguments to send to the bootstrap script. Usage is somewhat documented on github, but the script itself has more detailed usage instructions. By default, no arguments are sent to the script."
+		},
+		"minion_config": {
+			"type": "string",
+			"description": "The path to your local minion config. This will be uploaded to the /etc/salt on the remote."
+		},
+		"temp_config_dir": {
+			"type": "string",
+			"description": "Where your local state tree will be copied before moving to the /srv/salt directory. Default is /tmp/salt."
+		}
+	}
+}

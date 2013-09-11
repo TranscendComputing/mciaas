@@ -1,0 +1,8 @@
+{
+	"builders": {
+		"description": "Builders are responsible for creating machines and generating images from them for various platforms. For example, there are separate builders for EC2, VMware, VirtualBox, etc. Packer comes with many builders by default, and can also be extended to add new builders."
+	},
+	"provisioners": {
+		"description": "Provisioners contains an array of all the provisioners that Packer should use to install and configure software within running machines prior to turning them into machine images."
+	}
+}

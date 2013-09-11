@@ -1,0 +1,18 @@
+{
+	"chef-solo": {
+		"template_url": "/templates/provisioners/chef-solo",
+		"description": "The Chef solo provisioner installs and configures software on machines built by Packer using chef-solo. Cookbooks can be uploaded from your local machine to the remote machine or remote paths can be used. The provisioner will even install Chef onto your machine if it isn't already installed, using the official Chef installers provided by Opscode."
+	},
+	"file": {
+		"template_url": "/templates/provisioners/file",
+		"description": "The file provisioner uploads files to machines built by Packer. The recommended usage of the file provisioner is to use it to upload files, and then use shell provisioner to move them to the proper place, set permissions, etc."
+	},
+	"salt-masterless": {
+		"template_url": "/templates/provisioners/salt-masterless",
+		"description": "The salt-masterless provisioner provisions machines built by Packer using Salt states, without connecting to a Salt master."
+	},
+	"shell": {
+		"template_url": "/templates/provisioners/shell",
+		"description": "The shell provisioner provisions machines built by Packer using shell scripts. Shell provisioning is the easiest way to get software installed and configured on a machine."
+	}
+}

@@ -4,9 +4,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/ant0ine/go-json-rest"
 	"github.com/TranscendComputing/mciaas/restAPI"
 	"github.com/TranscendComputing/mciaas/store"
+	"github.com/ant0ine/go-json-rest"
 	"net/http"
 	"os"
 )
@@ -32,6 +32,8 @@ func realMain() int {
 		rest.RouteObjectMethod("GET", "/templates/builders/:type", &genericTemplates, "GetBuilderTemplate"),
 		rest.RouteObjectMethod("GET", "/templates/provisioners", &genericTemplates, "ListProvisionerTemplates"),
 		rest.RouteObjectMethod("GET", "/templates/provisioners/:type", &genericTemplates, "GetProvisionerTemplate"),
+		rest.RouteObjectMethod("GET", "/templates/postprocessors", &genericTemplates, "ListPostprocessorTemplates"),
+		rest.RouteObjectMethod("GET", "/templates/postprocessors/:type", &genericTemplates, "ListPostprocessorTemplates"),
 		rest.RouteObjectMethod("DELETE", "/packer/:user/:docId", &packerTemplates, "Delete"),
 		rest.RouteObjectMethod("GET", "/packer/:user/:docId", &packerTemplates, "Get"),
 		rest.RouteObjectMethod("POST", "/packer/:user/:docId", &packerTemplates, "Post"),

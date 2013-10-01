@@ -1,5 +1,5 @@
 {
-	"glance": {
-		"template_url": "/templates/postprocessors/glance"
-	}
+    "glance": {
+        "template_url": "/templates/postprocessors/glance"
+    }
 }

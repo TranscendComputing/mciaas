@@ -33,7 +33,7 @@ func realMain() int {
 		rest.RouteObjectMethod("GET", "/templates/provisioners", &genericTemplates, "ListProvisionerTemplates"),
 		rest.RouteObjectMethod("GET", "/templates/provisioners/:type", &genericTemplates, "GetProvisionerTemplate"),
 		rest.RouteObjectMethod("GET", "/templates/postprocessors", &genericTemplates, "ListPostprocessorTemplates"),
-		rest.RouteObjectMethod("GET", "/templates/postprocessors/:type", &genericTemplates, "ListPostprocessorTemplates"),
+		rest.RouteObjectMethod("GET", "/templates/postprocessors/:type", &genericTemplates, "GetPostprocessorTemplate"),
 		rest.RouteObjectMethod("DELETE", "/packer/:user/:docId", &packerTemplates, "Delete"),
 		rest.RouteObjectMethod("GET", "/packer/:user/:docId", &packerTemplates, "Get"),
 		rest.RouteObjectMethod("POST", "/packer/:user/:docId", &packerTemplates, "Post"),

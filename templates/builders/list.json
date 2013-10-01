@@ -1,4 +1,10 @@
 {
+	"amazon-ami": {
+		"template_url": "/templates/builders/amazonami"
+	},
+	"amazon-ebs": {
+		"template_url": "/templates/builders/amazonebs"
+	},
 	"qemu": {
 		"template_url": "/templates/builders/qemu"
 	}

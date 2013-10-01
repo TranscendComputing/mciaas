@@ -1,0 +1,5 @@
+{
+	"glance": {
+		"template_url": "/templates/postprocessors/glance"
+	}
+}

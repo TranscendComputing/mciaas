@@ -1,0 +1,12 @@
+{
+  "required": {
+    "server_url": {
+      "type": "string",
+      "description": "The glance server url to which to upload image."
+    },
+    "only": {
+      "type": "array of string",
+      "description": "A list of build names (not types) to consider for Glance uploads, no other builds will have artifacts uploaded."
+    }
+  }
+}

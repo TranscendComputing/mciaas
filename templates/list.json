@@ -4,5 +4,8 @@
 	},
 	"provisioners": {
 		"description": "Provisioners contains an array of all the provisioners that Packer should use to install and configure software within running machines prior to turning them into machine images."
+	},
+	"postprocessors": {
+		"description": "The post-processors configures any post-processing that will be done to images built by the builders. Examples of post-processing would be compressing files, uploading artifacts, etc. For instance, after running a qemu builder, uploading the resulting image to a list of Glance servers."
 	}
 }

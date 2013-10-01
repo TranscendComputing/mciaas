@@ -38,7 +38,7 @@ func (this *JSONTemplates) ListPostprocessorTemplates(w *rest.ResponseWriter, r 
 	store.SendJSONFile(w, r, filepath.Join(this.BasePath, "postprocessors", "list.json"))
 }
 
-func (this *JSONTemplates) ListPostprocessorTemplate(w *rest.ResponseWriter, r *rest.Request) {
+func (this *JSONTemplates) GetPostprocessorTemplate(w *rest.ResponseWriter, r *rest.Request) {
 	postprocessor := r.PathParam("type")
 	jsonPath := filepath.Join(this.BasePath, "postprocessors", postprocessor+".json")
 	store.SendJSONFile(w, r, jsonPath)

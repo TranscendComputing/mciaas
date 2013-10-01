@@ -1,5 +1,5 @@
 {
-	"optional":
+	"optional": {
 		"local_state_tree": {
 			"type": "string",
 			"description": "The path to your local state tree. This will be uploaded to the /srv/salt on the remote."

@@ -1,12 +1,10 @@
 package restAPI
 
 import (
-	"github.com/TranscendComputing/mciaas/store"
 	"bytes"
-	"encoding/json"
 	"fmt"
+	"github.com/TranscendComputing/mciaas/store"
 	"github.com/ant0ine/go-json-rest"
-	"github.com/peterbourgon/mergemap"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -48,6 +46,32 @@ func (this *ImageAPI) runPacker(path string) error {
 	return err
 }
 
+func (this *ImageAPI) setOverrides(
+	doc map[string]interface{},
+	userId string,
+	docId string) map[string]interface{} {
+
+	// set any output_directory and port info in builders
+	// note, this will fail hard (panic) if no builders exist
+	builders := doc["builders"]
+	for builder := range builders.([]interface{}) {
+		b := builders.([]interface{})[builder]
+		m := b.(map[string]interface{})
+		if m["type"] == "qemu" {
+			builderName := m["name"]
+			m["output_directory"] = fmt.Sprintf("output_%s", builderName)
+			m["http_directory"] = filepath.Join(this.rootPath,
+				userId, docId, "httpfiles")
+			m["http_port_min"] = 10000
+			m["http_port_max"] = 10999
+			m["ssh_host_port_min"] = 11000
+			m["ssh_host_port_max"] = 11999
+		}
+	}
+
+	return doc
+}
+
 func (this *ImageAPI) Delete(w *rest.ResponseWriter, r *rest.Request) {
 	userId := r.PathParam("user")
 	docId := r.PathParam("docId")
@@ -75,22 +99,10 @@ func (this *ImageAPI) Put(w *rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// force non-overridable parameters in the packer template
-	merge := fmt.Sprintf(
-		"{{\"builders\":{\"qemu\":{\"output_directory\":%s}}}}",
-		filepath.Join(this.rootPath, userId, docId))
-	bytes := []byte(merge)
+	merged := this.setOverrides(doc, userId, docId)
 
-	var m map[string]interface{}
-	if err = json.Unmarshal(bytes, &m); err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// merge the documents
-	merged := mergemap.Merge(doc, m)
-
-	// store the doc into a temporary file
-	path := filepath.Join("/tmp", docId)
+	// store the doc merged document into a temporary file
+	path := filepath.Join(this.rootPath, userId, docId, "build.json")
 	store.WriteJSONFile(path, merged)
 
 	// run Packer
@@ -111,6 +123,7 @@ func (this *ImageAPI) Get(w *rest.ResponseWriter, r *rest.Request) {
 		for _, fileInfo := range dirList {
 			fileList[fileInfo.Name()] = fileInfo.Size()
 		}
+		w.WriteJson(fileList)
 	} else {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	}

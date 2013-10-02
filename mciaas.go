@@ -9,13 +9,14 @@ import (
 	"github.com/ant0ine/go-json-rest"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 var listenPort int
 var rootPath string
 
 func realMain() int {
-	genericTemplates := JSONTemplates{"templates"}
+	genericTemplates := JSONTemplates{filepath.Join(rootPath, "templates")}
 	packerTemplates := restAPI.PackerRestAPI{}
 	storage := &store.MapStore{}
 	packerTemplates.SetStorage(storage)

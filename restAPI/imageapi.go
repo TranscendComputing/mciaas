@@ -54,8 +54,8 @@ func (this *ImageAPI) setOverrides(
 	// set any output_directory and port info in builders
 	// note, this will fail hard (panic) if no builders exist
 	builders := doc["builders"]
-	for builder := range builders.([]interface{}) {
-		b := builders.([]interface{})[builder]
+	for idx := range builders.([]interface{}) {
+		b := builders.([]interface{})[idx]
 		m := b.(map[string]interface{})
 		if m["type"] == "qemu" {
 			builderName := m["name"]
@@ -102,7 +102,9 @@ func (this *ImageAPI) Put(w *rest.ResponseWriter, r *rest.Request) {
 	merged := this.setOverrides(doc, userId, docId)
 
 	// store the doc merged document into a temporary file
-	path := filepath.Join(this.rootPath, userId, docId, "build.json")
+	path := filepath.Join(this.rootPath, userId, docId)
+	os.MkdirAll(path, 0750)
+	path = filepath.Join(path, "build.json")
 	store.WriteJSONFile(path, merged)
 
 	// run Packer

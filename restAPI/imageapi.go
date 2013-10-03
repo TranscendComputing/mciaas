@@ -104,11 +104,11 @@ func (this *ImageAPI) Put(w *rest.ResponseWriter, r *rest.Request) {
 	// store the doc merged document into a temporary file
 	path := filepath.Join(this.rootPath, userId, docId)
 	err = os.MkdirAll(path, 0750)
-	if err != nil {
+	if err == nil {
 		path = filepath.Join(path, "build.json")
 		err = store.WriteJSONFile(path, merged)
 
-		if err != nil {
+		if err == nil {
 			// run Packer
 			err = this.runPacker(path)
 		}

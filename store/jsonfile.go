@@ -23,10 +23,10 @@ func LoadJSONFile(jsonFile string) (map[string]interface{}, error) {
 }
 
 func WriteJSONFile(path string, jsonOb interface{}) error {
-	if bytes, err := json.Marshal(jsonOb); err != nil {
-		return err
-	} else {
+	if bytes, err := json.Marshal(jsonOb); err == nil {
 		return ioutil.WriteFile(path, bytes, 0660)
+	} else {
+		return err
 	}
 }
 

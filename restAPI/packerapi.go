@@ -1,9 +1,9 @@
 package restAPI
 
 import (
+	"github.com/TranscendComputing/mciaas/store"
 	"github.com/ant0ine/go-json-rest"
 	"github.com/peterbourgon/mergemap"
-	"github.com/TranscendComputing/mciaas/store"
 	"net/http"
 )
 
@@ -28,7 +28,7 @@ func (this *PackerRestAPI) Get(w *rest.ResponseWriter, r *rest.Request) {
 	if err == nil {
 		w.WriteJson(&doc)
 	} else {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		ProcessError(w, err, http.StatusInternalServerError)
 	}
 }
 
@@ -43,12 +43,9 @@ func (this *PackerRestAPI) Put(w *rest.ResponseWriter, r *rest.Request) {
 		docId, err := this.storage.PutDocument(userId, doc.(map[string]interface{}))
 		if err == nil {
 			w.WriteJson(&IdResponse{docId})
-		} else {
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-	} else {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+	ProcessError(w, err, http.StatusInternalServerError)
 }
 
 func (this *PackerRestAPI) Post(w *rest.ResponseWriter, r *rest.Request) {

@@ -2,6 +2,7 @@ package restAPI
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/TranscendComputing/mciaas/store"
 	"github.com/ant0ine/go-json-rest"
@@ -24,13 +25,26 @@ type FileInfo struct {
 
 type FileList []FileInfo
 
-func (this *ImageAPI) runPacker(path string) error {
+func (this *ImageAPI) runPacker(
+	jsonPath string,
+	cwdPath string) error {
+
 	var stdout, stderr bytes.Buffer
 
-	cmd := exec.Command("packer", "build", path)
+	// setup logging and the (iso) cache directory
+	log := "PACKER_LOG=1"
+	logDir := filepath.Dir(jsonPath)
+	logPath := fmt.Sprintf("PACKER_LOG_PATH=%s",
+		filepath.Join(logDir, "packer.log"))
+	cacheDir := fmt.Sprintf("PACKER_CACHE_DIR=%s",
+		filepath.Join(this.rootPath, "packer_cache"))
+	env := append(os.Environ(), log, logPath, cacheDir)
+
+	cmd := exec.Command("packer", "build", jsonPath)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	cmd.Dir = this.rootPath
+	cmd.Dir = cwdPath
+	cmd.Env = env
 	err := cmd.Start()
 
 	if err == nil {
@@ -46,30 +60,58 @@ func (this *ImageAPI) runPacker(path string) error {
 	return err
 }
 
-func (this *ImageAPI) setOverrides(
-	doc map[string]interface{},
-	userId string,
-	docId string) map[string]interface{} {
+func processFiles(tgtMap map[string]interface{}) error {
+	return nil
+}
 
-	// set any output_directory and port info in builders
-	// note, this will fail hard (panic) if no builders exist
-	builders := doc["builders"]
-	for idx := range builders.([]interface{}) {
-		b := builders.([]interface{})[idx]
-		m := b.(map[string]interface{})
-		if m["type"] == "qemu" {
-			builderName := m["name"]
-			m["output_directory"] = fmt.Sprintf("output_%s", builderName)
-			m["http_directory"] = filepath.Join(this.rootPath,
-				userId, docId, "httpfiles")
-			m["http_port_min"] = 10000
-			m["http_port_max"] = 10999
-			m["ssh_host_port_min"] = 11000
-			m["ssh_host_port_max"] = 11999
+// Return a (deep) copy of a document.
+// For now, this is an unoptimized copy until time permits
+// writing a deepcopy package. Most public deep copies depend on
+// some functionality from the 'unsafe' package that no longer exist.
+func deepcopy(doc map[string]interface{}) (map[string]interface{}, error) {
+	// empty interface into which to place the copy
+	var docCopy interface{}
+
+	if bytes, err := json.Marshal(doc); err != nil {
+		return nil, err
+	} else {
+		if err := json.Unmarshal(bytes, &docCopy); err != nil {
+			return nil, err
 		}
 	}
 
-	return doc
+	return docCopy.(map[string]interface{}), nil
+}
+
+func (this *ImageAPI) setOverrides(
+	doc map[string]interface{},
+	userId string,
+	docId string) (map[string]interface{}, error) {
+
+	if merged, err := deepcopy(doc); err == nil {
+		// set any output_directory and port info in builders
+		// note, this will fail hard (panic) if no builders exist
+		subMap := merged["builders"]
+		for idx := range subMap.([]interface{}) {
+			b := subMap.([]interface{})[idx]
+			m := b.(map[string]interface{})
+			if m["type"] == "qemu" {
+				builderName := m["name"]
+				m["output_directory"] = fmt.Sprintf("output_%s", builderName)
+				m["http_directory"] = filepath.Join(this.rootPath,
+					userId, docId, "httpfiles")
+				m["http_port_min"] = 10000
+				m["http_port_max"] = 10999
+				m["ssh_host_port_min"] = 11000
+				m["ssh_host_port_max"] = 11999
+			}
+			err = processFiles(m)
+		}
+		return merged, err
+	} else {
+		return nil, err
+	}
+
 }
 
 func (this *ImageAPI) Delete(w *rest.ResponseWriter, r *rest.Request) {
@@ -78,10 +120,9 @@ func (this *ImageAPI) Delete(w *rest.ResponseWriter, r *rest.Request) {
 	dir := filepath.Join(this.rootPath, userId, docId)
 	err := os.RemoveAll(dir)
 	if err == nil {
-		w.WriteJson(IdResponse{docId})
-	} else {
-		rest.Error(w, err.Error(), http.StatusNotFound)
+		err = w.WriteJson(IdResponse{docId})
 	}
+	ProcessError(w, err, http.StatusNotFound)
 }
 
 // Put on the imageAPI object requests that Packer create the
@@ -94,33 +135,38 @@ func (this *ImageAPI) Put(w *rest.ResponseWriter, r *rest.Request) {
 	this.storage.Open(userId)
 	doc, err := this.storage.GetDocument(userId, docId)
 	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		ProcessError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	// force non-overridable parameters in the packer template
-	merged := this.setOverrides(doc, userId, docId)
+	merged, err := this.setOverrides(doc, userId, docId)
+	if err != nil {
+		ProcessError(w, err, http.StatusInternalServerError)
+		return
+	}
 
 	// store the doc merged document into a temporary file
-	path := filepath.Join(this.rootPath, userId, docId)
-	fmt.Printf("imageAPI: creating dir: %s", path)
-	err = os.MkdirAll(path, 0750)
+	buildPath := filepath.Join(this.rootPath, userId, docId)
+	fmt.Printf("imageAPI: creating dir: %s\n", buildPath)
+	err = os.MkdirAll(buildPath, 0750)
 	if err == nil {
-		path = filepath.Join(path, "build.json")
-		fmt.Printf("imageAPI: writing file: %s", path)
-		err = store.WriteJSONFile(path, merged)
+		jsonPath := filepath.Join(buildPath, "build.json")
+		fmt.Printf("imageAPI: writing file: %s\n", jsonPath)
+		err = store.WriteJSONFile(jsonPath, merged)
 
 		if err == nil {
 			// run Packer
-			fmt.Printf("imageAPI: running packer with json file: %s", path)
-			err = this.runPacker(path)
+			fmt.Printf("imageAPI: running packer with json file: %s\n",
+				jsonPath)
+			err = this.runPacker(jsonPath, buildPath)
 		}
 	}
 
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
+	if err == nil {
 		w.WriteJson(IdResponse{docId})
+	} else {
+		ProcessError(w, err, http.StatusInternalServerError)
 	}
 }
 
@@ -135,7 +181,7 @@ func (this *ImageAPI) Get(w *rest.ResponseWriter, r *rest.Request) {
 		}
 		w.WriteJson(fileList)
 	} else {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		ProcessError(w, err, http.StatusInternalServerError)
 	}
 }
 

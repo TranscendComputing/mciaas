@@ -73,7 +73,11 @@
     "vm_name": {
       "type": "string",
       "description": "This is the name of the image (QCOW2 or IMG) file for the new virtual machine, without the file extension. By default this is \"packer-BUILDNAME\", where \"BUILDNAME\" is the name of the build."
-    }
+    },
+	"mciass_files": {
+		"type": "object of keys/values",
+		"description": "A set of keys indexing a key/value pair (i.e., a hash of hashes). Each outer key is a file name into place content and gets placed into a directory called \"httpfiles\" relative to the build files at the mciaas server. The inner key/value pairs are \"type\" and \"content\". The value for the \"content\" key must be a string. The value for the \"type\" key may be either of \"string\" or \"base64\" and if the latter, the content is decoded prior to placement into the file. The point of this file set facility is to transfer files to the mciaas server so it can make the files available to Packer, as denoted by other parameters."
+	}
   },
   "advanced": {
     "accelerator": {

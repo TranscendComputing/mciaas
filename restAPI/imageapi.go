@@ -2,6 +2,7 @@ package restAPI
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/TranscendComputing/mciaas/store"
@@ -60,7 +61,55 @@ func (this *ImageAPI) runPacker(
 	return err
 }
 
-func processFiles(tgtMap map[string]interface{}) error {
+func writeFile(filePath string, bytes []byte) error {
+	dir := filepath.Dir(filePath)
+	fmt.Printf("INFO: creating %s", dir)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		fmt.Printf("ERROR: %s\n", err)
+		return err
+	}
+
+	fmt.Printf("INFO: opening %s\n", filePath)
+	fo, err := os.Create(filePath)
+	if err != nil {
+		fmt.Printf("ERROR: %s\n", err)
+		return err
+	}
+	defer fo.Close()
+
+	_, err = fo.Write(bytes)
+	return err
+}
+
+func processFiles(tgtMap map[string]interface{}, tgtDir string) error {
+	files := tgtMap["mciaas_files"]
+	if files == nil {
+		return nil
+	}
+
+	for fileName, val := range files.(map[string]interface{}) {
+		m := val.(map[string]interface{})
+		content := m["content"].(string)
+		contentType := m["type"].(string)
+		var bytes []byte
+		if contentType == "base64" {
+			decoded, err := base64.StdEncoding.DecodeString(content)
+			if err == nil {
+				bytes = decoded
+			} else {
+				return err
+			}
+		} else {
+			bytes = []byte(content)
+		}
+
+		// write the file
+		filePath := filepath.Join(tgtDir, fileName)
+		if err := writeFile(filePath, bytes); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -105,13 +154,13 @@ func (this *ImageAPI) setOverrides(
 				m["ssh_host_port_min"] = 11000
 				m["ssh_host_port_max"] = 11999
 			}
-			err = processFiles(m)
+			err = processFiles(m, m["http_directory"].(string))
+			delete(m, "mciaas_files")
 		}
 		return merged, err
 	} else {
 		return nil, err
 	}
-
 }
 
 func (this *ImageAPI) Delete(w *rest.ResponseWriter, r *rest.Request) {

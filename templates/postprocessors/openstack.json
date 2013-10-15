@@ -1,0 +1,60 @@
+{
+    "required": {
+        "type": {
+            "type": "string",
+            "description": "the name of the post processor to use -- always \"openstack\" for this postprocessor."
+        },
+        "username": {
+            "type": "string",
+            "description": "The (keystone) username to use for authentication with OpenStack."
+        },
+        "password": {
+            "type": "string",
+            "description": "The password to use for authentication with OpenStack."
+        },
+        "project": {
+            "type": "string",
+            "description": "The tenant (project) to use for registring private images."
+        },
+        "provider": {
+            "type": "string",
+            "description": "The URL to use for authentication with OpenStack, e.g., http://my.openstack.com:35357/v2.0/tokens."
+        },
+        "region": {
+            "type": "string",
+            "description": "The OpenStack Region in which to register the new image and upload the image file."
+        }
+    },
+    "optional": {
+        "only": {
+            "type": "array of string",
+            "description": "A list of build names (not types) to consider for iimage uploads, no other builds will have artifacts uploaded."
+        },
+        "keep_input_artifact": {
+            "type": "boolean",
+            "description": "If set to true, the Packer Artifact (generally files created by a builder) sent to the post processor as input will not be delete. If false, all input Artifacts are deleted after the post processor completes the upload."
+        },
+        "qemu": {
+            "service_name": {
+                "type": "string",
+                "description": "The OpenStack endpoint service name for the Images API."
+            },
+            "service_type": {
+                "type": "string",
+                "description": "The OpenStack name for the service -- this will always be \"image\" for the time being."
+            },
+            "image_name": {
+                "type": "string",
+                "description": "The name to set as the image name in OpenStack. This name will appear in the OpenStack user interface when viewing images."
+            },
+            "visibility": {
+                "type": "string",
+                "description": "Specifies whether the new image uploaded will have \"public\" or \"private\" visibility. If private, only those users in the project (tenant) will see the image in image lists."
+            },
+            "tags": {
+                "type": "array of strings",
+                "description": "Tags to apply to the image. Tags are arbitrary, short strings that are attached as metadata to the image record in the OpenStack Image service."
+            }
+        }
+    }
+}

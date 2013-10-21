@@ -39,10 +39,11 @@ func (this *MapStore) GetDocument(docSetId string, docId string) (map[string]int
 }
 
 // Deletes a document from the store if it exists
-func (this *MapStore) DeleteDocument(docSetId string, docId string) {
+func (this *MapStore) DeleteDocument(docSetId string, docId string) error {
 	if dsTest, ok := (*this)[docSetId]; ok {
 		delete(*dsTest, docId)
 	}
+	return nil
 }
 
 // Puts a new document into the store

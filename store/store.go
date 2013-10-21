@@ -13,7 +13,7 @@ type Store interface {
 	Open(id string) (*DocumentSet, error)
 	Close() error
 	GetDocument(docSetId string, docId string) (map[string]interface{}, error)
-	DeleteDocument(docSetId string, docId string)
+	DeleteDocument(docSetId string, docId string) error
 	PutDocument(docSetId string, doc map[string]interface{}) (string, error)
 	UpdateDocument(docSetId string, docId string, doc map[string]interface{}) error
 }

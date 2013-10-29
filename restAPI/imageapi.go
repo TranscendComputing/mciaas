@@ -144,17 +144,18 @@ func (this *ImageAPI) setOverrides(
 		for idx := range subMap.([]interface{}) {
 			b := subMap.([]interface{})[idx]
 			m := b.(map[string]interface{})
+			filesDir := filepath.Join(this.rootPath,
+				userId, docId, "httpfiles")
 			if m["type"] == "qemu" {
 				builderName := m["name"]
 				m["output_directory"] = fmt.Sprintf("output_%s", builderName)
-				m["http_directory"] = filepath.Join(this.rootPath,
-					userId, docId, "httpfiles")
+				m["http_directory"] = filesDir
 				m["http_port_min"] = 10000
 				m["http_port_max"] = 10999
 				m["ssh_host_port_min"] = 11000
 				m["ssh_host_port_max"] = 11999
 			}
-			err = processFiles(m, m["http_directory"].(string))
+			err = processFiles(m, filesDir)
 			delete(m, "mciaas_files")
 		}
 		return merged, err

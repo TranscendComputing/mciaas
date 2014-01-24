@@ -8,14 +8,14 @@ import (
 )
 
 type PackerRestAPI struct {
-	storage *store.MapStore
+	storage *store.Store
 }
 
 func (this *PackerRestAPI) Delete(w *rest.ResponseWriter, r *rest.Request) {
 	userId := r.PathParam("user")
 	docId := r.PathParam("docId")
-	this.storage.Open(userId)
-	this.storage.DeleteDocument(userId, docId)
+	(*this.storage).Open(userId)
+	(*this.storage).DeleteDocument(userId, docId)
 	w.WriteJson(&IdResponse{docId})
 }
 
@@ -40,7 +40,7 @@ func (this *PackerRestAPI) Put(w *rest.ResponseWriter, r *rest.Request) {
 	if err == nil {
 		doc := empty
 		(*this.storage).Open(userId)
-		docId, err := this.storage.PutDocument(userId, doc.(map[string]interface{}))
+		docId, err := (*this.storage).PutDocument(userId, doc.(map[string]interface{}))
 		if err == nil {
 			w.WriteJson(&IdResponse{docId})
 		}
@@ -54,7 +54,7 @@ func (this *PackerRestAPI) Post(w *rest.ResponseWriter, r *rest.Request) {
 
 	// first, locate the existing document
 	(*this.storage).Open(userId)
-	doc, err := this.storage.GetDocument(userId, docId)
+	doc, err := (*this.storage).GetDocument(userId, docId)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -72,7 +72,7 @@ func (this *PackerRestAPI) Post(w *rest.ResponseWriter, r *rest.Request) {
 	merged := mergemap.Merge(doc, snippet.(map[string]interface{}))
 
 	//replace the document in the map
-	err = this.storage.UpdateDocument(userId, docId, merged)
+	err = (*this.storage).UpdateDocument(userId, docId, merged)
 	if err == nil {
 		w.WriteJson(&IdResponse{docId})
 	} else {
@@ -80,6 +80,6 @@ func (this *PackerRestAPI) Post(w *rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (this *PackerRestAPI) SetStorage(s *store.MapStore) {
+func (this *PackerRestAPI) SetStorage(s *store.Store) {
 	this.storage = s
 }

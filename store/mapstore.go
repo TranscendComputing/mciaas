@@ -9,14 +9,13 @@ import (
 type MapStore map[string]*DocumentSet
 
 // Store methods
-func (this *MapStore) Open(id string) (*DocumentSet, error) {
-	if ds, ok := (*this)[id]; ok {
-		return ds, nil
-	} else {
+func (this *MapStore) Open(id string) error {
+	if ds, ok := (*this)[id]; !ok {
 		ds = &DocumentSet{}
 		(*this)[id] = ds
-		return ds, nil
+		return nil
 	}
+	return nil
 }
 
 func (this *MapStore) Close() error {

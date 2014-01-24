@@ -10,7 +10,7 @@ type DocumentSet map[string]interface{}
 
 // A Store interface must support the following methods
 type Store interface {
-	Open(id string) (*DocumentSet, error)
+	Open(id string) error
 	Close() error
 	GetDocument(docSetId string, docId string) (map[string]interface{}, error)
 	DeleteDocument(docSetId string, docId string) error
